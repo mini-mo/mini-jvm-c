@@ -7,7 +7,7 @@
 - 可读
 - 可测
 
-## 开发环境
+# 开发环境
 
 - macos x86_64
 - jdk 8
@@ -15,7 +15,7 @@
 - cmake
 - clion 2020.2
 
-## 目录说明
+# 目录说明
 
 ```properties
 ├── CMakeLists.txt        --- .
@@ -23,17 +23,17 @@
 ├── docs                  --- 文档
 ├── misc                  --- 杂项文件
 ├── src                   --- 源码
-│   ├── hello.c     
-│   └── main.c      --- main
+│         ├── hello.c     
+│         └── main.c      --- main
 ├── test                  --- 白盒测试
-│   ├── assert.c    --- 断言
-│   └── test.c      --- test main
+│         ├── assert.c    --- 断言
+│         └── test.c      --- test main
 └── tests                 --- 黑盒测试
 ```
 
-## 开发
+# 开发
 
-### build
+## build
 
 ```bash
 mkdir build && cd build
@@ -41,22 +41,22 @@ cmake ../
 make
 ```
 
-### run
+## run
 
 ```bash
 ./jvm 
 ```
 
-### test
+## test
 
 ```bash
 ./test
 ```
 
-## 约束
+# 约束
 
 - 不支持跨平台
 
-## 其他
+# 其他
 
 - 随时夭折
