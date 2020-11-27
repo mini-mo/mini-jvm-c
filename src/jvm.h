@@ -6,15 +6,14 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "const.h"
 
 // types
 typedef uint8_t u1;
 typedef uint16_t u2;
 typedef uint32_t u4;
 
-#define TRUE 1;
-#define FALSE 0;
-
+// class file type
 typedef struct {
     u1 tag;
     u1 *info;
@@ -68,12 +67,12 @@ typedef struct {
     attribute_info *attributes;
 } class_file;
 
+// end class file
+
 // reader
-u4 read_u4(FILE *file);
-
-u2 read_u2(FILE *file);
-
-u1 read_u1(FILE *file);
+//u4 read_u4(FILE *file);
+//u2 read_u2(FILE *file);
+//u1 read_u1(FILE *file);
 
 class_file *read_class_file(FILE *file);
 

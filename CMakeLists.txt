@@ -12,6 +12,7 @@ endif (ZLIB_FOUND)
 
 set(
         VM_SOURCES
+        src/const.h
         src/jvm.h
         src/hello.c
         src/reader.c
@@ -36,6 +37,5 @@ add_executable(test test/test.c ${VM_TESTS_SOURCES})
 target_link_libraries(test vm z)
 
 # copy files
-
 file(COPY misc DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY tests DESTINATION ${CMAKE_BINARY_DIR})

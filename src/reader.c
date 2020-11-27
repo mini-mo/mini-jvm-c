@@ -23,8 +23,9 @@ class_file *read_class_file(FILE *file) {
     cf->constant_pool_count = read_u2(file);
     cf->constant_pool = malloc(sizeof(cp_info) * cf->constant_pool_count);
     // from 1
-    cp_info *constant = cf->constant_pool;
-    for (u2 i = 1; i < cf->constant_pool_count; ++i, constant++) {
+
+    for (u2 i = 1; i < cf->constant_pool_count; ++i) {
+        cp_info *constant = &cf->constant_pool[i];
         constant->tag = read_u1(file);
         switch (constant->tag) {
             case 1: {
@@ -105,15 +106,15 @@ class_file *read_class_file(FILE *file) {
     // fields
     cf->fields_count = read_u2(file);
     cf->fields = malloc(sizeof(field_info) * cf->fields_count);
-    field_info *field = cf->fields;
-    for (int j = 0; j < cf->fields_count; ++j, field++) {
+    for (int j = 0; j < cf->fields_count; ++j) {
+        field_info *field = &cf->fields[j];
         field->access_flags = read_u2(file);
         field->name_index = read_u2(file);
         field->descriptor_index = read_u2(file);
         field->attributes_count = read_u2(file);
         field->attributes = malloc(sizeof(attribute_info) * field->attributes_count);
-        attribute_info *info = field->attributes;
-        for (int k = 0; k < field->attributes_count; ++k, info++) {
+        for (int k = 0; k < field->attributes_count; ++k) {
+            attribute_info *info = &field->attributes[k];
             info->attribute_name_index = read_u2(file);
             info->attribute_length = read_u4(file);
             char *body = malloc(sizeof(u1) * info->attribute_length);
@@ -125,15 +126,15 @@ class_file *read_class_file(FILE *file) {
     // methods
     cf->methods_count = read_u2(file);
     cf->methods = malloc(sizeof(method_info) * cf->methods_count);
-    method_info *method = cf->methods;
-    for (int j = 0; j < cf->methods_count; ++j, method++) {
+    for (int j = 0; j < cf->methods_count; ++j) {
+        method_info *method = &cf->methods[j];
         method->access_flags = read_u2(file);
         method->name_index = read_u2(file);
         method->descriptor_index = read_u2(file);
         method->attributes_count = read_u2(file);
         method->attributes = malloc(sizeof(attribute_info) * method->attributes_count);
-        attribute_info *info = method->attributes;
-        for (int k = 0; k < method->attributes_count; ++k, info++) {
+        for (int k = 0; k < method->attributes_count; ++k) {
+            attribute_info *info = &method->attributes[k];
             info->attribute_name_index = read_u2(file);
             info->attribute_length = read_u4(file);
             char *body = malloc(sizeof(u1) * info->attribute_length);
@@ -145,9 +146,9 @@ class_file *read_class_file(FILE *file) {
 
     // attributes
     cf->attributes_count = read_u2(file);
-
-    attribute_info *info = cf->attributes;
-    for (int k = 0; k < method->attributes_count; ++k, info++) {
+    cf->attributes = malloc(sizeof(attribute_info) * cf->attributes_count);
+    for (int k = 0; k < cf->attributes_count; ++k) {
+        attribute_info *info = &cf->attributes[k];
         info->attribute_name_index = read_u2(file);
         info->attribute_length = read_u4(file);
         char *body = malloc(sizeof(u1) * info->attribute_length);
