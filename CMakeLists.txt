@@ -5,23 +5,20 @@ enable_language(C ASM)
 
 set(CMAKE_C_STANDARD 99)
 
-find_package(ZLIB REQUIRED)
-if (ZLIB_FOUND)
-    message(STATUS "ZLIB FOUND ${ZLIB_INCLUDE_DIRS} ${ZLIB_LIBRARIES}")
-endif (ZLIB_FOUND)
-
 set(
         VM_SOURCES
         src/const.h
         src/jvm.h
+        src/utils.c
         src/hello.c
         src/reader.c
+        src/class_loader.c
 )
 
 # main
 add_library(vm ${VM_SOURCES})
 add_executable(jvm src/main.c)
-target_link_libraries(jvm vm z)
+target_link_libraries(jvm vm)
 
 
 set(
@@ -30,12 +27,14 @@ set(
         test/assert.h
         test/assert.c
         test/test_class_reader.c
+        test/test_class_loader.c
 )
 
 ## test
 add_executable(test test/test.c ${VM_TESTS_SOURCES})
-target_link_libraries(test vm z)
+target_link_libraries(test vm)
 
 # copy files
 file(COPY misc DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY tests DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY jre DESTINATION ${CMAKE_BINARY_DIR})

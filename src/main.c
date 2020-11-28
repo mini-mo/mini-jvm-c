@@ -1,21 +1,29 @@
 #include <stdio.h>
 #include "jvm.h"
 
-code *parse_code(method_info mi, cp_info *cp);
+code_t *parse_code(method_info_t mi, cp_info_t *cp);
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        printf("must provide class path");
+        println_string("must provide class path");
         return -1;
     }
 
-    FILE *cls_file = fopen(argv[1], "r");
-    assert(cls_file && "failed to open file");
-    class_file *cf = read_class_file(cls_file);
-    fclose(cls_file);
+    // FIXME user parameters
+    class_loader_t *cl = class_loader_init("misc:jre");
 
-    method_info mi = cf->methods[1];
-    code *code = parse_code(mi, cf->constant_pool);
+    char *main_class = strdup(argv[1]);
+    char *cpntr;
+    for (cpntr = main_class; *cpntr; cpntr++) {
+        if (*cpntr == '.') {
+            *cpntr = '/';
+        }
+    }
+    class_t *cls = load_class(cl, main_class);
+    class_file_t *cf = cls->cf;
+
+    method_info_t mi = cf->methods[1];
+    code_t *code = parse_code(mi, cf->constant_pool);
 
     u1 *bc = code->code;
     uintptr_t *local_vars = malloc(sizeof(uintptr_t) * code->max_locals);
@@ -58,11 +66,11 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-code *parse_code(method_info mi, cp_info *cp) {
+code_t *parse_code(method_info_t mi, cp_info_t *cp) {
     for (int i = 0; i < mi.attributes_count; ++i) {
-        attribute_info info = mi.attributes[i];
+        attribute_info_t info = mi.attributes[i];
         u2 ni = info.attribute_name_index;
-        cp_info cpi = cp[ni];
+        cp_info_t cpi = cp[ni];
         if (cpi.tag != CONSTANT_Utf8) {
             continue;
         }
@@ -71,7 +79,7 @@ code *parse_code(method_info mi, cp_info *cp) {
         }
 
         u1 *bytes = info.body;
-        code *code = malloc(sizeof(code));
+        code_t *code = malloc(sizeof(code_t));
         code->max_stack = (bytes[0] << 8) | bytes[1];
         bytes += 2;
         code->max_locals = (bytes[0] << 8) | bytes[1];

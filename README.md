@@ -33,6 +33,18 @@
 
 # 开发
 
+## prepare
+
+暂不支持 jar 包读取，需要将标准库 rt.jar 的内容解压到 jre 目录。
+
+```bash
+mkdir jre
+cd jre
+
+cp $JAVA_HOME/jre/lib/rt.jar .
+unzip rt.jar
+```
+
 ## build
 
 ```bash

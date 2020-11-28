@@ -1,9 +1,11 @@
 #ifndef MINI_JVM_C_CONST_H
 #define MINI_JVM_C_CONST_H
 
+// boolean
 #define TRUE 1;
 #define FALSE 0;
 
+// constant pool
 #define CONSTANT_Class    7
 #define CONSTANT_Fieldref    9
 #define CONSTANT_Methodref    10
@@ -18,5 +20,16 @@
 #define CONSTANT_MethodHandle    15
 #define CONSTANT_MethodType    16
 #define CONSTANT_InvokeDynamic    18
+
+// class
+#define CLASS_LOADED  1
+#define CLASS_LINKED  2
+#define CLASS_INITIALING  3
+#define CLASS_INITIALIZED 4
+
+
+
+// opcode
+
 
 #endif //MINI_JVM_C_CONST_H
