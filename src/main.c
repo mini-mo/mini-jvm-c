@@ -31,33 +31,99 @@ int main(int argc, char **argv) {
     int pc = 0;
     for (;;) {
         u1 tag = bc[pc];
+//        printf("%x\n", tag);
         switch (tag) {
-            case 0x04: {
+            case ICONST_0: {
+                uintptr_t tos = 0;
+                *ostack++ = tos;
+                pc++;
+                break;
+            }
+            case ICONST_1: {
                 uintptr_t tos = 1;
                 *ostack++ = tos;
                 pc++;
                 break;
             }
-            case 0x3b: {
-                local_vars[0] = *--ostack;
-                pc++;
+            case BIPUSH: {
+                uintptr_t tos = bc[pc + 1];
+                *ostack++ = tos;
+                pc += 2;
                 break;
             }
-            case 0x1a: {
+            case ILOAD_0: {
                 uintptr_t tos = local_vars[0];
                 *ostack++ = tos;
                 pc++;
                 break;
             }
-            case 0xac: {
+            case ILOAD_1: {
+                uintptr_t tos = local_vars[1];
+                *ostack++ = tos;
+                pc++;
+                break;
+            }
+            case ILOAD_2: {
+                uintptr_t tos = local_vars[2];
+                *ostack++ = tos;
+                pc++;
+                break;
+            }
+            case ISTORE_0: {
+                local_vars[0] = *--ostack;
+                pc++;
+                break;
+            }
+            case ISTORE_1: {
+                local_vars[1] = *--ostack;
+                pc++;
+                break;
+            }
+            case ISTORE_2: {
+                local_vars[2] = *--ostack;
+                pc++;
+                break;
+            }
+            case IF_ICMPGT: {
+                uintptr_t os = (bc[pc + 1] << 8) | bc[pc + 2];
+                uintptr_t v2 = *--ostack;
+                uintptr_t v1 = *--ostack;
+                if (v1 > v2) {
+                    pc += os;
+                } else {
+                    pc += 3;
+                }
+                break;
+            }
+            case IADD: {
+                uintptr_t v2 = *--ostack;
+                uintptr_t v1 = *--ostack;
+                *ostack++ = v1 + v2;
+                pc++;
+                break;
+            }
+            case IINC: {
+                uintptr_t li = bc[pc + 1];
+                uintptr_t val = bc[pc + 2];
+                local_vars[li] = local_vars[li] + val;
+                pc += 3;
+                break;
+            }
+            case IRETURN: {
                 printf("%d\n", *--ostack);
                 pc++;
                 goto end;
             }
-            default:
+            case GOTO: {
+                int tmp = (signed short) ((bc[pc + 1] << 8) | (bc)[pc + 2]);
+                pc += tmp;
+                break;
+            }
+            default: {
                 fprintf(stderr, "xxx");
                 exit(-1);
                 break;
+            }
         }
     }
 
