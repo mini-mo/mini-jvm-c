@@ -13,6 +13,9 @@ set(
         src/hello.c
         src/reader.c
         src/class_loader.c
+        src/meta_space.c
+        src/types.c
+        src/class.c
 )
 
 # main
@@ -28,6 +31,7 @@ set(
         test/assert.c
         test/test_class_reader.c
         test/test_class_loader.c
+        test/test_frame.c
 )
 
 ## test

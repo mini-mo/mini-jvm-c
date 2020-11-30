@@ -2,8 +2,8 @@
 #define MINI_JVM_C_CONST_H
 
 // boolean
-#define TRUE 1;
-#define FALSE 0;
+#define TRUE 1
+#define FALSE 0
 
 // constant pool
 #define CONSTANT_Class    7
@@ -235,5 +235,6 @@
 #define IMPDEP1 0xfe // 254
 #define IMPDEP2 0xff // 255
 
+#define CODE_ERR_STACK_OVERFLOW 400001
 
 #endif //MINI_JVM_C_CONST_H

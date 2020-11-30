@@ -87,6 +87,12 @@ typedef struct {
 } field_t;
 
 typedef struct {
+    u1 flag;
+    int max_locals;
+    int max_stack;
+    char *name;
+    char *descriptor;
+    u1 *bc;
 } method_t;
 
 typedef struct {
@@ -96,6 +102,18 @@ typedef struct {
     field_t *fields;
     method_t *methods;
 } class_t;
+
+// 在指定类中获取静态方法
+method_t *find_special_static_method(class_t *cls, char *name, char *descriptor);
+
+// 获取静态方法，递归
+method_t *find_static_method(class_t *cls, char *name, char *descriptor);
+
+// 在指定类中获取实例方法
+method_t *find_special_method(class_t *cls, char *name, char *descriptor);
+
+// 获取实例方法，递归
+method_t *find_method(class_t *cls, char *name, char *descriptor);
 
 // class loader
 typedef struct {
@@ -111,10 +129,61 @@ class_t *load_class(class_loader_t *cl, const char *name);
 
 // end
 
+// frame & env
+typedef struct {
+    int stat;
+    uintptr_t *local_vars;
+    uintptr_t *operand_stack;
+    method_t *method;
+    int pc;
+} frame_t;
+
+frame_t *frame_init(method_t *method);
+
+typedef struct {
+    int size;
+    // 栈顶
+    int top;
+    // 栈帧
+    frame_t **frame;
+
+    // 异常码
+    int code;
+} env_t;
+
+env_t *env_init(int size);
+
+void env_destroy(env_t *env);
+
+frame_t *env_top_frame(env_t *env);
+
+void env_push(env_t *env, frame_t *frame);
+
+frame_t *env_pop(env_t *env);
+
+int env_empty(env_t *env);
+
+typedef struct {
+    // 执行环境
+    env_t *env;
+} meta_space_t;
+
+meta_space_t *meta_space_init();
+
+void set_main_env(meta_space_t *meta, env_t *env);
+
+env_t *main_env(meta_space_t *meta);
+// end
+
 
 // utils
 void println();
 
 void println_string(const char *str);
 // end
+
+// global variables
+// 错误码
+int code;
+
 #endif //MINI_JVM_C_JVM_H

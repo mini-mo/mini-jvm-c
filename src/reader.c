@@ -1,16 +1,16 @@
 #include "jvm.h"
 
-u1 read_u1(FILE *class_file) {
+static u1 read_u1(FILE *class_file) {
     int result = fgetc(class_file);
     assert(result != EOF && "Reached end of file prematurely");
     return (u1) result;
 }
 
-u2 read_u2(FILE *class_file) {
+static u2 read_u2(FILE *class_file) {
     return (u2) (read_u1(class_file) << 8 | read_u1(class_file));
 }
 
-u4 read_u4(FILE *class_file) {
+static u4 read_u4(FILE *class_file) {
     return (u4) (read_u2(class_file) << 16 | read_u2(class_file));
 }
 

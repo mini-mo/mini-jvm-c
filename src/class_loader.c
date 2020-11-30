@@ -53,6 +53,10 @@ class_loader_t *class_loader_init(char cp[]) {
     return cl;
 }
 
+class_t *define_class(class_file_t *cf);
+
+void link_class(class_t *cls);
+
 class_t *load_class(class_loader_t *cl, const char *name) {
     class_file_t *cf = NULL;
     for (int i = 0; i < cl->cnt; ++i) {
@@ -71,14 +75,57 @@ class_t *load_class(class_loader_t *cl, const char *name) {
             continue;
         }
 
-        class_t *cls = malloc(sizeof(class_t));
-        cls->cf = cf;
-        cls->methods = NULL;
-        cls->fields = NULL;
-        cls->stat = CLASS_LOADED;
+        class_t *cls = define_class(cf);
+        link_class(cls);
         return cls;
     }
     return NULL;
+}
+
+class_t *define_class(class_file_t *cf) {
+    class_t *cls = malloc(sizeof(class_t));
+    cls->cf = cf;
+    cp_info_t *cp = cf->constant_pool;
+
+    cls->methods = malloc(sizeof(method_t) * cf->methods_count);
+    for (int i = 0; i < cf->methods_count; ++i) {
+        method_info_t mi = cf->methods[i];
+        method_t *m = &(cls->methods[i]);
+        m->name = (char *) cp[mi.name_index].info;
+        m->descriptor = (char *) cp[mi.descriptor_index].info;
+        m->flag = mi.access_flags;
+
+        for (int j = 0; j < mi.attributes_count; ++j) {
+            attribute_info_t info = mi.attributes[j];
+            u2 ni = info.attribute_name_index;
+            cp_info_t cpi = cp[ni];
+            if (cpi.tag != CONSTANT_Utf8) {
+                continue;
+            }
+            if (strcmp((char *) cpi.info, "Code") != 0) {
+                continue;
+            }
+
+            u1 *bytes = info.body;
+            m->max_stack = (bytes[0] << 8) | bytes[1];
+            bytes += 2;
+            m->max_locals = (bytes[0] << 8) | bytes[1];
+            bytes += 2;
+            int code_length = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+            bytes += 4;
+            m->bc = malloc(sizeof(u1) * code_length);
+            memcpy(m->bc, bytes, code_length);
+            break;
+        };
+    }
+
+    cls->fields = NULL;
+    cls->stat = CLASS_LOADED;
+    return cls;
+}
+
+void link_class(class_t *cls) {
+
 }
 
 void class_loader_destroy(class_loader_t *cl) {

@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "jvm.h"
 
-code_t *parse_code(method_info_t mi, cp_info_t *cp);
-
 int main(int argc, char **argv) {
     if (argc < 2) {
         println_string("must provide class path");
@@ -19,145 +17,121 @@ int main(int argc, char **argv) {
             *cpntr = '/';
         }
     }
+
     class_t *cls = load_class(cl, main_class);
-    class_file_t *cf = cls->cf;
+    method_t *mm = find_special_method(cls, "test", "()I");
 
-    method_info_t mi = cf->methods[1];
-    code_t *code = parse_code(mi, cf->constant_pool);
+    env_t *env = env_init(10);
+    frame_t *mf = frame_init(mm);
 
-    u1 *bc = code->code;
-    uintptr_t *local_vars = malloc(sizeof(uintptr_t) * code->max_locals);
-    uintptr_t *ostack = malloc(sizeof(uintptr_t) * code->max_stack);
-    int pc = 0;
-    for (;;) {
-        u1 tag = bc[pc];
-//        printf("%x\n", tag);
-        switch (tag) {
-            case ICONST_0: {
-                uintptr_t tos = 0;
-                *ostack++ = tos;
-                pc++;
-                break;
-            }
-            case ICONST_1: {
-                uintptr_t tos = 1;
-                *ostack++ = tos;
-                pc++;
-                break;
-            }
-            case BIPUSH: {
-                uintptr_t tos = bc[pc + 1];
-                *ostack++ = tos;
-                pc += 2;
-                break;
-            }
-            case ILOAD_0: {
-                uintptr_t tos = local_vars[0];
-                *ostack++ = tos;
-                pc++;
-                break;
-            }
-            case ILOAD_1: {
-                uintptr_t tos = local_vars[1];
-                *ostack++ = tos;
-                pc++;
-                break;
-            }
-            case ILOAD_2: {
-                uintptr_t tos = local_vars[2];
-                *ostack++ = tos;
-                pc++;
-                break;
-            }
-            case ISTORE_0: {
-                local_vars[0] = *--ostack;
-                pc++;
-                break;
-            }
-            case ISTORE_1: {
-                local_vars[1] = *--ostack;
-                pc++;
-                break;
-            }
-            case ISTORE_2: {
-                local_vars[2] = *--ostack;
-                pc++;
-                break;
-            }
-            case IF_ICMPGT: {
-                uintptr_t os = (bc[pc + 1] << 8) | bc[pc + 2];
-                uintptr_t v2 = *--ostack;
-                uintptr_t v1 = *--ostack;
-                if (v1 > v2) {
-                    pc += os;
-                } else {
-                    pc += 3;
+    env_push(env, mf);
+    {
+        while (!env_empty(env)) {
+            frame_t *tf = env_top_frame(env);
+            u1 *bc = tf->method->bc;
+            uintptr_t *local_vars = tf->local_vars;
+            uintptr_t *operand_stack = tf->operand_stack;
+
+            while (1) {
+                u1 tag = *bc;
+                switch (tag) {
+                    case ICONST_0: {
+                        uintptr_t tos = 0;
+                        *operand_stack++ = tos;
+                        bc++;
+                        break;
+                    }
+                    case ICONST_1: {
+                        uintptr_t tos = 1;
+                        *operand_stack++ = tos;
+                        bc++;
+                        break;
+                    }
+                    case BIPUSH: {
+                        uintptr_t tos = bc[1];
+                        *operand_stack++ = tos;
+                        bc += 2;
+                        break;
+                    }
+                    case ILOAD_0: {
+                        uintptr_t tos = local_vars[0];
+                        *operand_stack++ = tos;
+                        bc++;
+                        break;
+                    }
+                    case ILOAD_1: {
+                        uintptr_t tos = local_vars[1];
+                        *operand_stack++ = tos;
+                        bc++;
+                        break;
+                    }
+                    case ILOAD_2: {
+                        uintptr_t tos = local_vars[2];
+                        *operand_stack++ = tos;
+                        bc++;
+                        break;
+                    }
+                    case ISTORE_0: {
+                        local_vars[0] = *--operand_stack;
+                        bc++;
+                        break;
+                    }
+                    case ISTORE_1: {
+                        local_vars[1] = *--operand_stack;
+                        bc++;
+                        break;
+                    }
+                    case ISTORE_2: {
+                        local_vars[2] = *--operand_stack;
+                        bc++;
+                        break;
+                    }
+                    case IF_ICMPGT: {
+                        uintptr_t os = (bc[1] << 8) | bc[2];
+                        uintptr_t v2 = *--operand_stack;
+                        uintptr_t v1 = *--operand_stack;
+                        if (v1 > v2) {
+                            bc += os;
+                        } else {
+                            bc += 3;
+                        }
+                        break;
+                    }
+                    case IADD: {
+                        uintptr_t v2 = *--operand_stack;
+                        uintptr_t v1 = *--operand_stack;
+                        *operand_stack++ = v1 + v2;
+                        bc++;
+                        break;
+                    }
+                    case IINC: {
+                        uintptr_t li = bc[1];
+                        uintptr_t val = bc[2];
+                        local_vars[li] = local_vars[li] + val;
+                        bc += 3;
+                        break;
+                    }
+                    case IRETURN: {
+                        printf("%d\n", *--operand_stack);
+                        bc++;
+                        goto end;
+                    }
+                    case GOTO: {
+                        int tmp = (signed short) ((bc[1] << 8) | (bc)[2]);
+                        bc += tmp;
+                        break;
+                    }
+                    default: {
+                        fprintf(stderr, "xxx");
+                        exit(-1);
+                        break;
+                    }
                 }
-                break;
             }
-            case IADD: {
-                uintptr_t v2 = *--ostack;
-                uintptr_t v1 = *--ostack;
-                *ostack++ = v1 + v2;
-                pc++;
-                break;
-            }
-            case IINC: {
-                uintptr_t li = bc[pc + 1];
-                uintptr_t val = bc[pc + 2];
-                local_vars[li] = local_vars[li] + val;
-                pc += 3;
-                break;
-            }
-            case IRETURN: {
-                printf("%d\n", *--ostack);
-                pc++;
-                goto end;
-            }
-            case GOTO: {
-                int tmp = (signed short) ((bc[pc + 1] << 8) | (bc)[pc + 2]);
-                pc += tmp;
-                break;
-            }
-            default: {
-                fprintf(stderr, "xxx");
-                exit(-1);
-                break;
-            }
+
         }
     }
-
     end:
 
     return 0;
-}
-
-code_t *parse_code(method_info_t mi, cp_info_t *cp) {
-    for (int i = 0; i < mi.attributes_count; ++i) {
-        attribute_info_t info = mi.attributes[i];
-        u2 ni = info.attribute_name_index;
-        cp_info_t cpi = cp[ni];
-        if (cpi.tag != CONSTANT_Utf8) {
-            continue;
-        }
-        if (strcmp((char *) cpi.info, "Code") != 0) {
-            continue;
-        }
-
-        u1 *bytes = info.body;
-        code_t *code = malloc(sizeof(code_t));
-        code->max_stack = (bytes[0] << 8) | bytes[1];
-        bytes += 2;
-        code->max_locals = (bytes[0] << 8) | bytes[1];
-        bytes += 2;
-        code->code_length = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
-        bytes += 4;
-        u1 *cb = malloc(sizeof(u1) * code->code_length);
-        memcpy(cb, bytes, code->code_length);
-        code->code = cb;
-
-        return code;
-    };
-
-    return NULL;
 }
