@@ -41,12 +41,12 @@ typedef struct {
     attribute_info_t *attributes;
 } field_info_t;
 
-typedef struct {
-    u2 max_stack;
-    u2 max_locals;
-    u4 code_length;
-    u1 *code;
-} code_t;
+//typedef struct {
+//    u2 max_stack;
+//    u2 max_locals;
+//    u4 code_length;
+//    u1 *code;
+//} code_t;
 
 typedef struct {
     u4 magic;
@@ -175,6 +175,7 @@ void set_main_env(meta_space_t *meta, env_t *env);
 env_t *main_env(meta_space_t *meta);
 // end
 
+void execute();
 
 // utils
 void println();
@@ -185,5 +186,6 @@ void println_string(const char *str);
 // global variables
 // 错误码
 int code;
+env_t *env;
 
 #endif //MINI_JVM_C_JVM_H

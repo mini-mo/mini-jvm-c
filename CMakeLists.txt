@@ -16,6 +16,7 @@ set(
         src/meta_space.c
         src/types.c
         src/class.c
+        src/interpreter.c
 )
 
 # main
