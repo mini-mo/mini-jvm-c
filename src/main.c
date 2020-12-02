@@ -23,12 +23,6 @@ int main(int argc, char **argv) {
     // vm init
     env = env_init(10);
 
-    // main frame
-    frame_t *mf = frame_init(mm);
-    env_push(env, mf);
-
-    // interpreter run...
-    execute();
-
+    execute_static_method(mm);
     return 0;
 }

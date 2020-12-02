@@ -175,7 +175,7 @@ void set_main_env(meta_space_t *meta, env_t *env);
 env_t *main_env(meta_space_t *meta);
 // end
 
-void execute();
+void execute_static_method(method_t *method);
 
 // utils
 void println();
