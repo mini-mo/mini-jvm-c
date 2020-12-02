@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     }
 
     class_t *cls = load_class(cl, main_class);
-    method_t *mm = find_special_method(cls, "test", "()I");
+    method_t *mm = find_special_method(cls, "main", "([Ljava/lang/String;)V");
 
     // vm init
     env = env_init(10);
