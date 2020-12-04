@@ -1,14 +1,13 @@
 #include "jvm.h"
 
 static void execute() {
-    start:
     while (!env_empty(env)) {
         frame_t *tf = env_top_frame(env);
         u1 *bc = tf->method->bc;
         uintptr_t *local_vars = tf->local_vars;
         uintptr_t *operand_stack = tf->operand_stack;
 
-        while (1) {
+        while (*bc) {
             u1 tag = *bc;
             switch (tag) {
                 // const
@@ -40,57 +39,72 @@ static void execute() {
                     break;
                 }
                 case ICONST_2 : {
-                    fprintf(stderr, " iconst_2 ");
+                    uintptr_t tos = 2;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case ICONST_3 : {
-                    fprintf(stderr, " iconst_3 ");
+                    uintptr_t tos = 3;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case ICONST_4 : {
-                    fprintf(stderr, " iconst_4 ");
+                    uintptr_t tos = 4;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case ICONST_5 : {
-                    fprintf(stderr, " iconst_5 ");
+                    uintptr_t tos = 5;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case LCONST_0 : {
-                    fprintf(stderr, " lconst_0 ");
+                    uint64_t val = 0;
+                    *(uint64_t *) &operand_stack[0 * 2] = val;
+                    operand_stack += 2;
                     bc++;
                     break;
                 }
                 case LCONST_1 : {
-                    fprintf(stderr, " lconst_1 ");
+                    uint64_t val = 1;
+                    *(uint64_t *) &operand_stack[0 * 2] = val;
+                    operand_stack += 2;
                     bc++;
                     break;
                 }
                 case FCONST_0 : {
-                    fprintf(stderr, " fconst_0 ");
+                    uintptr_t tos = 0;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case FCONST_1 : {
-                    fprintf(stderr, " fconst_1 ");
+                    uintptr_t tos = 1;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case FCONST_2 : {
-                    fprintf(stderr, " fconst_2 ");
+                    uintptr_t tos = 2;
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
                 case DCONST_0 : {
-                    fprintf(stderr, " dconst_0 ");
+                    uint64_t val = 0;
+                    *(uint64_t *) &operand_stack[0 * 2] = val;
+                    operand_stack += 2;
                     bc++;
                     break;
                 }
                 case DCONST_1 : {
-                    fprintf(stderr, " dconst_1 ");
+                    uint64_t val = 1;
+                    *(uint64_t *) &operand_stack[0 * 2] = val;
+                    operand_stack += 2;
                     bc++;
                     break;
                 }
@@ -101,7 +115,8 @@ static void execute() {
                     break;
                 }
                 case SIPUSH : {
-                    fprintf(stderr, " sipush ");
+                    uintptr_t tos = (signed short) (((bc)[1] << 8) | (bc)[2]);
+                    *operand_stack++ = tos;
                     bc++;
                     break;
                 }
@@ -893,7 +908,6 @@ static void execute() {
                 case IRETURN: {
                     printf("%d\n", *--operand_stack);
                     bc++;
-                    goto end;
                 }
                 case LRETURN : {
                     fprintf(stderr, " lreturn ");
@@ -916,8 +930,9 @@ static void execute() {
                     break;
                 }
                 case RETURN : {
-                    env_pop(env);
-                    goto start;
+                    frame_t *pf = env_pop(env);
+                    free(pf);
+                    bc++;
                     break;
                 }
                 case GETSTATIC : {
@@ -1065,8 +1080,7 @@ static void execute() {
             }
         }
     }
-    end:
-    return;
+
 }
 
 void execute_static_method(method_t *method) {

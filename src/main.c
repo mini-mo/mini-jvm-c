@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
     }
 
     // FIXME user parameters
-    class_loader_t *cl = class_loader_init("misc:jre");
+    class_loader_t *cl = class_loader_init(".:misc:jre");
 
     char *main_class = strdup(argv[1]);
     char *cpntr;
